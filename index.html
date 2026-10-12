@@ -1,0 +1,163 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrito de compras</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 700px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        .producto {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        button {
+            padding: 7px 12px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background: white;
+        }
+
+        .eliminar {
+            color: #b42318;
+        }
+
+        #total {
+            font-size: 24px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Mi carrito</h1>
+
+    <div id="listaProductos"></div>
+
+    <hr>
+
+    <p>Unidades: <span id="unidades">0</span></p>
+    <p>Total: <span id="total">$0</span></p>
+
+    <script>
+        const productos = [
+            { id: 1, nombre: "Taza", precio: 8500, cantidad: 1 },
+            { id: 2, nombre: "Cuaderno", precio: 4200, cantidad: 2 },
+            { id: 3, nombre: "Lapicera", precio: 1500, cantidad: 1 }
+        ];
+
+        const lista = document.querySelector("#listaProductos");
+        const totalHTML = document.querySelector("#total");
+        const unidadesHTML = document.querySelector("#unidades");
+
+        const pesos = new Intl.NumberFormat("es-AR", {
+            style: "currency",
+            currency: "ARS",
+            maximumFractionDigits: 0
+        });
+
+        function calcularTotal() {
+            return productos.reduce(
+                (total, producto) =>
+                    total + producto.precio * producto.cantidad,
+                0
+            );
+        }
+
+        function calcularUnidades() {
+            return productos.reduce(
+                (total, producto) => total + producto.cantidad,
+                0
+            );
+        }
+
+        function mostrarProductos() {
+            lista.innerHTML = productos.map(producto => `
+                <div class="producto">
+                    <div>
+                        <strong>${producto.nombre}</strong>
+                        <p>${pesos.format(producto.precio)}</p>
+                    </div>
+
+                    <div>
+                        <button data-accion="menos"
+                            data-id="${producto.id}">−</button>
+
+                        ${producto.cantidad}
+
+                        <button data-accion="mas"
+                            data-id="${producto.id}">+</button>
+
+                        <button class="eliminar"
+                            data-accion="eliminar"
+                            data-id="${producto.id}">
+                            Eliminar
+                        </button>
+                    </div>
+                </div>
+            `).join("");
+
+            totalHTML.textContent = pesos.format(calcularTotal());
+            unidadesHTML.textContent = calcularUnidades();
+        }
+
+        lista.addEventListener("click", function(evento) {
+            const boton = evento.target.closest("button");
+
+            if (!boton) {
+                return;
+            }
+
+            const id = Number(boton.dataset.id);
+            const accion = boton.dataset.accion;
+
+            const producto = productos.find(
+                producto => producto.id === id
+            );
+
+            if (!producto) {
+                return;
+            }
+
+            if (accion === "mas") {
+                producto.cantidad++;
+            }
+
+            if (accion === "menos" && producto.cantidad > 1) {
+                producto.cantidad--;
+            }
+
+            if (accion === "eliminar") {
+                const indice = productos.findIndex(
+                    producto => producto.id === id
+                );
+
+                productos.splice(indice, 1);
+            }
+
+            mostrarProductos();
+        });
+
+        mostrarProductos();
+    </script>
+
+</body>
+</html>
